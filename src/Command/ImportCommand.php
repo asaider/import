@@ -46,14 +46,24 @@ class ImportCommand extends Command
         if (($arg1) && ($arg1=='test')) {
 
             $io->note(sprintf('You passed an argument: %s', $arg1));
-            $cout_error=0;
             $all=0;
+            $mas_error=[];
             foreach ($results as $result) {
+                $error=$this->get_validation($result);
+                if (count($error)>0)
+                    $mas_error[]=$error;
                 $all++;
-                $cout_error+=$this->test($result);
             }
             echo "Всех записей в файле:".$all."\n";
-            echo "количество строк,не прошедших валидацию:".$cout_error."\n";
+            echo "количество строк,не прошедших валидацию:".count($mas_error)."\n";
+            if (count($mas_error)>0) {
+                echo "Report"."\n";
+                foreach ($mas_error as $key=>$item) {
+                    echo "Product code:".$item[0]['product_code']." ";
+                    echo "Property:".$item[0]['property']." ";
+                    echo "Message:".$item[0]['message']."\n";
+                }
+            }
         }
 
         if ($input->getOption('option1')) {
@@ -62,44 +72,47 @@ class ImportCommand extends Command
 
         //$io->success('You have a new command! Now make it your own! Pass --help to see your options.');
     }
-    protected function test($result){
-        //var_dump($result);die();
+    protected function get_validation($result) {
+        $data=[];
         $validator = Validation::createValidator();
         $constraint = new Assert\Collection(
             [
                 'fields' => [
                     'Product Code' => [
-                        new Assert\NotBlank()
+                        new Assert\Required()
                     ],
                     'Product Name' => [
-                        new Assert\NotBlank()
+                        new Assert\Required()
                     ],
                     'Product Description' => [
+                        new Assert\NotBlank(),
                     ],
                     'Stock' => [
-                        //new Assert\Type('integer'),
+                        new Assert\Type('numeric'),
                     ],
                     'Cost in GBP' => [
                         new Assert\NotBlank(),
-                        //new Assert\Type('float'),
+                        new Assert\Type('numeric'),
                     ],
                     'Discontinued' => [
-                        //new Assert\EqualTo("yes",""),
+                        new Assert\Choice(["yes", ""]),
                     ]
                 ]
             ]
         );
         $violations = $validator->validate($result, $constraint);
-        /*$violations = $validator->validate($result['Cost in GBP'], array(
-            new NotBlank(),
-        ));*/
 
         if (0 !== count($violations)) {
             // есть ошибки, теперь вы можете их отобразить
             foreach ($violations as $violation) {
-                echo $violation->getMessage()."\n";
+                $data[]=[
+                    'product_code'=>$result['Product Code'],
+                    'property'=>$violation->getPropertyPath(),
+                    'message'=>$violation->getMessage()
+                ];
+                //echo $violation->getMessage()."\n";
             }
         }
-        return count($violations);
+        return $data;
     }
 }

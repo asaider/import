@@ -77,5 +77,151 @@ class Tblproductdata
      */
     private $stmtimestamp = 'CURRENT_TIMESTAMP';
 
+    /**
+     * @return int
+     */
+    public function getIntproductdataid(): int
+    {
+        return $this->intproductdataid;
+    }
+
+    /**
+     * @param int $intproductdataid
+     */
+    public function setIntproductdataid(int $intproductdataid): void
+    {
+        $this->intproductdataid = $intproductdataid;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStrproductname(): string
+    {
+        return $this->strproductname;
+    }
+
+    /**
+     * @param string $strproductname
+     */
+    public function setStrproductname(string $strproductname): void
+    {
+        $this->strproductname = $strproductname;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStrproductdesc(): string
+    {
+        return $this->strproductdesc;
+    }
+
+    /**
+     * @param string $strproductdesc
+     */
+    public function setStrproductdesc(string $strproductdesc): void
+    {
+        $this->strproductdesc = $strproductdesc;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStrproductcode(): string
+    {
+        return $this->strproductcode;
+    }
+
+    /**
+     * @param string $strproductcode
+     */
+    public function setStrproductcode(string $strproductcode): void
+    {
+
+        $this->strproductcode = $strproductcode;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStock(): int
+    {
+        return $this->stock;
+    }
+
+    /**
+     * @param int $stock
+     */
+    public function setStock(int $stock): void
+    {
+        $this->stock = $stock;
+    }
+
+    /**
+     * @return decimal
+     */
+    public function getPrice(): decimal
+    {
+        return $this->price;
+    }
+
+    /**
+     * @param decimal $price
+     */
+    public function setPrice(string $price): void
+    {
+        $price=floatval($price);
+        $this->price = $price;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getDtmadded(): ?\DateTime
+    {
+        return $this->dtmadded;
+    }
+
+    /**
+     * @param \DateTime|null $dtmadded
+     */
+    public function setDtmadded(?\DateTime $dtmadded): void
+    {
+        $this->dtmadded = $dtmadded;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getDtmdiscontinued(): ?\DateTime
+    {
+        return $this->dtmdiscontinued;
+    }
+
+    /**
+     * @param \DateTime|null $dtmdiscontinued
+     */
+    public function setDtmdiscontinued(?\DateTime $dtmdiscontinued): void
+    {
+        $this->dtmdiscontinued = $dtmdiscontinued;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getStmtimestamp(): \DateTime
+    {
+        return $this->stmtimestamp;
+    }
+
+    /**
+     * @param \DateTime $stmtimestamp
+     */
+    public function setStmtimestamp(\DateTime $stmtimestamp): void
+    {
+        $this->stmtimestamp = $stmtimestamp;
+    }
+
 
 }

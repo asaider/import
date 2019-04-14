@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Tblproductdata;
+use App\Repository\TblproductdataRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ImportCommand extends Command
 {
     protected static $defaultName = 'Import';
+
     private $em;
 
     /**
@@ -59,7 +61,7 @@ class ImportCommand extends Command
             $all = 0;
             $mas_error = [];
             foreach ($results as $result) {
-                $error = $this->get_validation($result);
+                $error = $this->get_validation($result,$arg1);
                 if (count($error) > 0)
                     $mas_error[] = $error;
                 $all++;
@@ -75,8 +77,9 @@ class ImportCommand extends Command
                     echo "Message:" . $item[0]['message'] . "\n";
                 }
             }
-        } else {
-            $this->insert($results);
+        }
+        else {
+            //$this->insert($results);
         }
         if ($input->getOption('option1')) {
             // ...
@@ -84,8 +87,9 @@ class ImportCommand extends Command
         //$io->success('You have a new command! Now make it your own! Pass --help to see your options.');
     }
 
-    protected function get_validation($result)
+    protected function get_validation($result,$arg1)
     {
+
         $data = [];
 
         $validator = Validation::createValidator();
@@ -135,32 +139,74 @@ class ImportCommand extends Command
                     'property' => $violation->getPropertyPath(),
                     'message' => $violation->getMessage()
                 ];
-                //echo $violation->getMessage()."\n";
             }
+        }
+        else {
+            $repository=$this->em->getRepository(Tblproductdata::class);
+            $product=$repository->findOneBy(['strproductcode'=>$result['Product Code']]);
+
+            if (($product)!=null)
+            {
+                $product->setStrproductcode($result['Product Code']);
+                $product->setStrproductname($result['Product Name']);
+                $product->setStrproductdesc($result['Product Description']);
+                $product->setStock($result['Stock']);
+                $product->setPrice($result['Cost in GBP']);
+                $product->setStmtimestamp(new \DateTime());
+                if ($result['Discontinued']=='yes')
+                    $product->setDtmdiscontinued(new \DateTime());
+
+            }
+            else {
+                $product = new Tblproductdata();
+                $product->setStrproductcode($result['Product Code']);
+                $product->setStrproductname($result['Product Name']);
+                $product->setStrproductdesc($result['Product Description']);
+                $product->setStock($result['Stock']);
+                $product->setPrice($result['Cost in GBP']);
+                $product->setDtmadded(new \DateTime());
+                if ($result['Discontinued']=='yes')
+                    $product->setDtmdiscontinued(new \DateTime());
+                $product->setStmtimestamp(new \DateTime());
+            }
+            $this->em->persist($product);
+            $this->em->flush();
         }
 
         return $data;
     }
 
-    protected function insert($data)
+    /*protected function insert($data)
     {
         echo "hi" . "\n";
+
+        $this->em->flush();
+
         foreach ($data as $row) {
 
             $product = new Tblproductdata();
 
             $product->setStrproductcode($row['Product Code']);
-            $product->setStrproductname("gfhfh");
-            $product->setStrproductdesc("fgfh");
-            $product->setStock(5);
-            $product->setPrice("dfgd");
+            $product->setStrproductname($row['Product Name']);
+            $product->setStrproductdesc($row['Product Description']);
+            //$product->setStock($row['Stock']);
+            //$product->setPrice($row['Cost in GBP']);
             $product->setDtmadded(new \DateTime());
             $product->setDtmdiscontinued(new \DateTime());
             $product->setStmtimestamp(new \DateTime());
 
-            $this->em->persist($product);
+
+            $validator = Validation::createValidatorBuilder()
+                ->addMethodMapping('loadValidatorMetadata')
+                ->getValidator();
+            $violations = $validator->validate($product);
+            if  (count($violations)==0);
+                $this->em->persist($product);
+
+
+
         }
         $this->em->flush();
 
-    }
+    }*/
 }

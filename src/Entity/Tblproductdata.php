@@ -3,15 +3,22 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Symfony\Component\Validator\Constraints as Assert;
+
+
+
 
 /**
  * Tblproductdata
  *
  * @ORM\Table(name="tblProductData", uniqueConstraints={@ORM\UniqueConstraint(name="strProductCode", columns={"strProductCode"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\TblproductdataRepository")
+ *
  */
 class Tblproductdata
 {
+
     /**
      * @var int
      *
@@ -30,7 +37,6 @@ class Tblproductdata
 
     /**
      * @var string
-     *
      * @ORM\Column(name="strProductDesc", type="string", length=255, nullable=false)
      */
     private $strproductdesc;
@@ -153,8 +159,9 @@ class Tblproductdata
     /**
      * @param int $stock
      */
-    public function setStock(int $stock): void
-    {
+    public function setStock(string $stock): void    {
+
+
         $this->stock = $stock;
     }
 
@@ -171,7 +178,7 @@ class Tblproductdata
      */
     public function setPrice(string $price): void
     {
-        $price=floatval($price);
+
         $this->price = $price;
     }
 
@@ -222,6 +229,13 @@ class Tblproductdata
     {
         $this->stmtimestamp = $stmtimestamp;
     }
+   /* public static function loadValidatorMetadata(ClassMetadata $metadata)
+    {
 
+        $metadata->addPropertyConstraint('strproductcode', new Assert\NotBlank);
+        $metadata->addPropertyConstraint('strproductname', new Assert\NotBlank);
+        $metadata->addPropertyConstraint('stock', new Assert\NotBlank, new Assert\NotBlank(), new Assert\GreaterThanOrEqual(0));
+        $metadata->addPropertyConstraint('price', new Assert\NotBlank, new Assert\Type('numeric'),new Assert\GreaterThanOrEqual(0),new Assert\LessThan(1000));
+    }*/
 
 }

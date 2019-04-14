@@ -7,15 +7,10 @@ use App\Repository\TblproductdataRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Csv\Reader;
-
-
 use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class ImportCommand extends Command
@@ -23,6 +18,12 @@ class ImportCommand extends Command
     protected static $defaultName = 'Import';
 
     private $em;
+
+    /**
+     * @var TblproductdataRepository
+     */
+    private $repository;
+
 
     /**
      * CsvImportCommand constructor.
@@ -36,81 +37,102 @@ class ImportCommand extends Command
         parent::__construct();
 
         $this->em = $em;
+        $this->repository = $this->em->getRepository(Tblproductdata::class);
     }
 
     protected function configure()
     {
         $this
-            ->setDescription('Add a short description for your command')
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description');
+            ->setDescription('Import data from csv file')
+            ->addArgument('mode', InputArgument::OPTIONAL, 'Test mode');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $io = new SymfonyStyle($input, $output);
 
-        $reader = Reader::createFromPath('%kernel.root_dir%/../src/Data/stock.csv');
+        try {
+            $reader = Reader::createFromPath('%kernel.root_dir%/../src/Data/stock.csv');
+        } catch (\Exception $e) {
+            $output->writeln($e->getMessage());
+            exit();
+        }
         $results = $reader->setHeaderOffset(0);
 
-        $arg1 = $input->getArgument('arg1');
+        $testMode = $this->isItTestMode($input);
+        $errorList = [];
+        $addCount = 0;
+        $output->writeln('<info>Всего записей:' . $reader->count() . '</info>');
+        foreach ($results as $result) {
+            $violations = $this->validate($result);
 
-        if (($arg1) && ($arg1 == 'test')) {
-
-            $io->note(sprintf('You passed an argument: %s', $arg1));
-            $all = 0;
-            $mas_error = [];
-            foreach ($results as $result) {
-                $error = $this->get_validation($result,$arg1);
-                if (count($error) > 0)
-                    $mas_error[] = $error;
-                $all++;
+            if ($violations) {
+                $errorList[] = $violations;
+                continue;
             }
-            echo "Всех записей в файле:" . $all . "\n";
-            echo "количество записей,готовых для импорта:" . ($all - count($mas_error)) . "\n";
-            echo "количество записей,не прошедших валидацию:" . count($mas_error) . "\n";
-            if (count($mas_error) > 0) {
-                echo "Report" . "\n";
-                foreach ($mas_error as $key => $item) {
-                    echo "Product code:" . $item[0]['product_code'] . " ";
-                    echo "Property:" . $item[0]['property'] . " ";
-                    echo "Message:" . $item[0]['message'] . "\n";
-                }
+            if (!$testMode) {
+                $this->save($result);
+                $addCount += 1;
             }
         }
-        else {
-            //$this->insert($results);
-        }
-        if ($input->getOption('option1')) {
-            // ...
-        }
-        //$io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+        $this->createErrorsReport($errorList,$output);
+        $output->writeln('<info>Добавлено записей:' . $addCount . '</info>');
+
     }
 
-    protected function get_validation($result,$arg1)
+
+    private function isItTestMode(InputInterface $input)
     {
+        $arg1 = $input->getArgument('mode');
 
-        $data = [];
+        return ($arg1) && ($arg1 == 'test');
+    }
 
+    public function validate(array $input): array
+    {
+        $error = [];
         $validator = Validation::createValidator();
-        $constraint = new Assert\Collection(
+        $constraint = $this->getConstraint();
+
+        $violations = $validator->validate($input, $constraint);
+        $templateMessage = 'Product ' . $input['Product Code'];
+
+        if (($input['Cost in GBP'] < 5) && ($input['Stock'] < 10)) {
+            $error[] = $templateMessage . ' не подходит под условия:стоимость меньше 5,и количество меньше 10';
+        }
+
+
+        foreach ($violations as $violation) {
+            $error[] = $templateMessage . ' property ' . $violation->getPropertyPath() . $violation->getMessage();
+        }
+
+        return $error;
+    }
+
+    private function getConstraint(): Assert\Collection
+    {
+        return new Assert\Collection(
             [
                 'fields' => [
                     'Product Code' => [
-                        new Assert\NotBlank()
+                        new Assert\NotBlank(),
+                        new Assert\Required()
+
                     ],
                     'Product Name' => [
-                        new Assert\NotBlank()
+                        new Assert\NotBlank(),
+                        new Assert\Required()
                     ],
                     'Product Description' => [
-                        //new Assert\NotBlank(),
+                        //new Assert\Required()
                     ],
                     'Stock' => [
+                        new Assert\Required(),
                         new Assert\Type('numeric'),
                         new Assert\NotBlank(),
                         new Assert\GreaterThanOrEqual(0)
                     ],
                     'Cost in GBP' => [
+                        new Assert\Required(),
                         new Assert\NotBlank(),
                         new Assert\Type('numeric'),
                         new Assert\GreaterThanOrEqual(0),
@@ -122,91 +144,51 @@ class ImportCommand extends Command
                 ]
             ]
         );
-
-        $violations = $validator->validate($result, $constraint);
-
-        if (($result['Cost in GBP'] < 5) && ($result['Stock'] < 10))
-            $data[] = [
-                'product_code' => $result['Product Code'],
-                'property' => "",
-                'message' => "не подходит под условия:стоимость меньше 5,и количество меньше 10"
-            ];
-        if (0 !== count($violations)) {
-            // есть ошибки, теперь вы можете их отобразить
-            foreach ($violations as $violation) {
-                $data[] = [
-                    'product_code' => $result['Product Code'],
-                    'property' => $violation->getPropertyPath(),
-                    'message' => $violation->getMessage()
-                ];
-            }
-        }
-        else {
-            $repository=$this->em->getRepository(Tblproductdata::class);
-            $product=$repository->findOneBy(['strproductcode'=>$result['Product Code']]);
-
-            if (($product)!=null)
-            {
-                $product->setStrproductcode($result['Product Code']);
-                $product->setStrproductname($result['Product Name']);
-                $product->setStrproductdesc($result['Product Description']);
-                $product->setStock($result['Stock']);
-                $product->setPrice($result['Cost in GBP']);
-                $product->setStmtimestamp(new \DateTime());
-                if ($result['Discontinued']=='yes')
-                    $product->setDtmdiscontinued(new \DateTime());
-
-            }
-            else {
-                $product = new Tblproductdata();
-                $product->setStrproductcode($result['Product Code']);
-                $product->setStrproductname($result['Product Name']);
-                $product->setStrproductdesc($result['Product Description']);
-                $product->setStock($result['Stock']);
-                $product->setPrice($result['Cost in GBP']);
-                $product->setDtmadded(new \DateTime());
-                if ($result['Discontinued']=='yes')
-                    $product->setDtmdiscontinued(new \DateTime());
-                $product->setStmtimestamp(new \DateTime());
-            }
-            $this->em->persist($product);
-            $this->em->flush();
-        }
-
-        return $data;
     }
 
-    /*protected function insert($data)
+
+    private function save(array $data):void
     {
-        echo "hi" . "\n";
 
-        $this->em->flush();
-
-        foreach ($data as $row) {
-
-            $product = new Tblproductdata();
-
-            $product->setStrproductcode($row['Product Code']);
-            $product->setStrproductname($row['Product Name']);
-            $product->setStrproductdesc($row['Product Description']);
-            //$product->setStock($row['Stock']);
-            //$product->setPrice($row['Cost in GBP']);
-            $product->setDtmadded(new \DateTime());
+        $product = $this->getProduct($data['Product Code']);
+        $product->setStrproductcode($data['Product Code']);
+        $product->setStrproductname($data['Product Name']);
+        $product->setStrproductdesc($data['Product Description']);
+        $product->setStock($data['Stock']);
+        $product->setPrice($data['Cost in GBP']);
+        if ($data['Discontinued'] == 'yes') {
             $product->setDtmdiscontinued(new \DateTime());
-            $product->setStmtimestamp(new \DateTime());
+        }
+        $product->setStmtimestamp(new \DateTime());
 
-
-            $validator = Validation::createValidatorBuilder()
-                ->addMethodMapping('loadValidatorMetadata')
-                ->getValidator();
-            $violations = $validator->validate($product);
-            if  (count($violations)==0);
-                $this->em->persist($product);
-
-
+        try {
+            $this->em->persist($product);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            echo $e->getMessage();
 
         }
-        $this->em->flush();
+    }
 
-    }*/
+    private function getProduct($productCode): Tblproductdata
+    {
+        $product = $this->repository->findOneByProductCode($productCode);
+
+        return is_null($product) ? $this->createNewProduct() : $product;
+
+    }
+
+    private function createNewProduct(){
+        $product = new Tblproductdata();
+        $product->setDtmadded(new \DateTime());
+        return $product;
+    }
+
+    private function createErrorsReport(array $errors,OutputInterface $output)
+    {
+        foreach ($errors as $error) {
+            $output->writeln($error);
+        }
+    }
 }
+

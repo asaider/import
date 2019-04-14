@@ -19,6 +19,15 @@ class TblproductdataRepository extends ServiceEntityRepository
         parent::__construct($registry, Tblproductdata::class);
     }
 
+
+    public function findOneByProductCode($value): ?Tblproductdata
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.strproductcode = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
     // /**
     //  * @return Tblproductdata[] Returns an array of Tblproductdata objects
     //  */
@@ -47,4 +56,6 @@ class TblproductdataRepository extends ServiceEntityRepository
         ;
     }
     */
+
+
 }

@@ -61,7 +61,7 @@ class ImportCommand extends Command
         $testMode = $this->isItTestMode($input);
         $errorList = [];
         $addCount = 0;
-        $output->writeln('<info>Всего записей:' . $reader->count() . '</info>');
+        $output->writeln('<info>All data:' . $reader->count() . '</info>');
         foreach ($results as $result) {
             $violations = $this->validate($result);
 
@@ -75,8 +75,9 @@ class ImportCommand extends Command
             }
         }
         $this->createErrorsReport($errorList,$output);
-        $output->writeln('<info>Добавлено записей:' . $addCount . '</info>');
-
+        $output->writeln('<info>Added rows:' . $addCount . '</info>');
+        if (!$testMode)
+            $output->writeln('<info>error rows:' . ($reader->count()-$addCount) . '</info>');
     }
 
 
@@ -97,7 +98,7 @@ class ImportCommand extends Command
         $templateMessage = 'Product ' . $input['Product Code'];
 
         if (($input['Cost in GBP'] < 5) && ($input['Stock'] < 10)) {
-            $error[] = $templateMessage . ' не подходит под условия:стоимость меньше 5,и количество меньше 10';
+            $error[] = $templateMessage . ' does not fit the conditions: the cost is less than 5, and the amount is less than 10';
         }
 
 

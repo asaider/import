@@ -78,9 +78,9 @@ class ImportCommand extends Command
             }
         }
         $this->createErrorsReport($errorList,$output);
-        $output->writeln('<info>Added/Update rows:' . $addCount . '</info>');
+        $output->writeln('<info>Insert/Update rows:' . $addCount . '</info>');
         if (!$testMode)
-            $output->writeln('<info>error rows:' . ($reader->count()-$addCount) . '</info>');
+            $output->writeln('<info>errors rows:' . ($reader->count()-$addCount) . '</info>');
     }
 
 
@@ -180,7 +180,7 @@ class ImportCommand extends Command
 
     }
 
-    private function createNewProduct()
+    private function createNewProduct(): Tblproductdata
     {
         $product = new Tblproductdata();
         $product->setDtmadded(new \DateTime());

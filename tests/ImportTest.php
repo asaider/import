@@ -4,27 +4,13 @@ namespace App\tests;
 
 use App\Command\ImportCommand;
 use PHPUnit\Framework\TestCase;
-use League\Csv\Reader;
 use Doctrine\ORM\EntityManagerInterface;
-
 class ImportTest extends TestCase
 {
     public function testFile()
     {
         $this->assertFileExists('src/Data/stock.csv');
     }
-
-    public function testsCsvColumns()
-    {
-        $reader = Reader::createFromPath('src/Data/stock.csv');
-        $reader->setHeaderOffset(0);
-        $header = $reader->getHeader();
-        $name_column=['Product Code','Product Name','Product Description','Stock','Cost in GBP','Discontinued'];
-        ksort($header);
-        ksort($name_column);
-        $this->assertEquals($header,$name_column);
-    }
-
 
     public function testValidation()
     {

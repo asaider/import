@@ -61,6 +61,8 @@ class ImportCommand extends Command
         $testMode = $this->isItTestMode($input);
         $errorList = [];
         $addCount = 0;
+        if ($testMode)
+            $output->writeln('<info>Test mode:</info>');
         $output->writeln('<info>All data:' . $reader->count() . '</info>');
         foreach ($results as $result) {
             $violations = $this->validate($result);
@@ -75,7 +77,7 @@ class ImportCommand extends Command
             }
         }
         $this->createErrorsReport($errorList,$output);
-        $output->writeln('<info>Added rows:' . $addCount . '</info>');
+        $output->writeln('<info>Added/Update rows:' . $addCount . '</info>');
         if (!$testMode)
             $output->writeln('<info>error rows:' . ($reader->count()-$addCount) . '</info>');
     }
@@ -124,7 +126,6 @@ class ImportCommand extends Command
                         new Assert\Required()
                     ],
                     'Product Description' => [
-                        //new Assert\Required()
                     ],
                     'Stock' => [
                         new Assert\Required(),

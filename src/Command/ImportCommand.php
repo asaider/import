@@ -49,7 +49,6 @@ class ImportCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
         try {
             $reader = Reader::createFromPath('%kernel.root_dir%/../src/Data/stock.csv');
         } catch (\Exception $e) {
@@ -61,8 +60,10 @@ class ImportCommand extends Command
         $testMode = $this->isItTestMode($input);
         $errorList = [];
         $addCount = 0;
+
         if ($testMode)
             $output->writeln('<info>Test mode:</info>');
+
         $output->writeln('<info>All data:' . $reader->count() . '</info>');
         foreach ($results as $result) {
             $violations = $this->validate($result);
@@ -102,7 +103,6 @@ class ImportCommand extends Command
         if (($input['Cost in GBP'] < 5) && ($input['Stock'] < 10)) {
             $error[] = $templateMessage . ' data isn’t correct: the cost is less than 5, and the amount is less than 10';
         }
-
 
         foreach ($violations as $violation) {
             $error[] = $templateMessage . ' property ' . $violation->getPropertyPath() . $violation->getMessage();
@@ -151,14 +151,14 @@ class ImportCommand extends Command
 
     private function save(array $data):void
     {
-
         $product = $this->getProduct($data['Product Code']);
         $product->setStrproductcode($data['Product Code']);
         $product->setStrproductname($data['Product Name']);
         $product->setStrproductdesc($data['Product Description']);
         $product->setStock($data['Stock']);
         $product->setPrice($data['Cost in GBP']);
-        if ($data['Discontinued'] == 'yes') {
+        if ($data['Discontinued'] == 'yes')
+        {
             $product->setDtmdiscontinued(new \DateTime());
         }
         $product->setStmtimestamp(new \DateTime());
@@ -180,15 +180,18 @@ class ImportCommand extends Command
 
     }
 
-    private function createNewProduct(){
+    private function createNewProduct()
+    {
         $product = new Tblproductdata();
         $product->setDtmadded(new \DateTime());
         return $product;
+
     }
 
     private function createErrorsReport(array $errors,OutputInterface $output)
     {
-        foreach ($errors as $error) {
+        foreach ($errors as $error)
+        {
             $output->writeln($error);
         }
     }

@@ -5,6 +5,7 @@ namespace App\tests;
 use App\Command\ImportCommand;
 use PHPUnit\Framework\TestCase;
 use Doctrine\ORM\EntityManagerInterface;
+
 class ImportTest extends TestCase
 {
     public function testFile()

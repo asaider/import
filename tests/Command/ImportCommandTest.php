@@ -22,7 +22,6 @@ class ImportCommandTest extends KernelTestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(array(
             'command'  => $command->getName(),
-            // pass arguments to the helper
             'mode' => 'test',
         ));
         $output = $commandTester->getDisplay();

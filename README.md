@@ -12,4 +12,5 @@
        ```php bin/console Import test```
   +  Для проверки тестов выполните:   
        ```php bin/phpunit```
+  ---     
   Сsv файл,который импортируется должен быть расположен в /src/Data/stock.csv

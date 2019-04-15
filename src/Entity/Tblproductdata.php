@@ -8,7 +8,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 
 
-
 /**
  * Tblproductdata
  *
@@ -229,13 +228,6 @@ class Tblproductdata
     {
         $this->stmtimestamp = $stmtimestamp;
     }
-   /* public static function loadValidatorMetadata(ClassMetadata $metadata)
-    {
 
-        $metadata->addPropertyConstraint('strproductcode', new Assert\NotBlank);
-        $metadata->addPropertyConstraint('strproductname', new Assert\NotBlank);
-        $metadata->addPropertyConstraint('stock', new Assert\NotBlank, new Assert\NotBlank(), new Assert\GreaterThanOrEqual(0));
-        $metadata->addPropertyConstraint('price', new Assert\NotBlank, new Assert\Type('numeric'),new Assert\GreaterThanOrEqual(0),new Assert\LessThan(1000));
-    }*/
 
 }

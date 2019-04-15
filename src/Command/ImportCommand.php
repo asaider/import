@@ -100,7 +100,7 @@ class ImportCommand extends Command
         $templateMessage = 'Product ' . $input['Product Code'];
 
         if (($input['Cost in GBP'] < 5) && ($input['Stock'] < 10)) {
-            $error[] = $templateMessage . ' does not fit the conditions: the cost is less than 5, and the amount is less than 10';
+            $error[] = $templateMessage . ' data isn’t correct: the cost is less than 5, and the amount is less than 10';
         }
 
 

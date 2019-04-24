@@ -20,6 +20,7 @@ class Tblproductdata
      * @ORM\Column(name="intProductDataId", type="integer", nullable=false, options={"unsigned"=true})
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $intproductdataid;
 
@@ -161,9 +162,9 @@ class Tblproductdata
     }
 
     /**
-     * @return decimal
+     * @return int
      */
-    public function getPrice(): decimal
+    public function getPrice(): int
     {
         return $this->price;
     }

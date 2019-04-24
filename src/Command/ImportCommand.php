@@ -91,7 +91,7 @@ class ImportCommand extends Command
         return ($arg1) && ($arg1 == 'test');
     }
 
-    public function validate(array $input): array
+    private function validate(array $input): array
     {
         $error = [];
         $validator = Validation::createValidator();
@@ -149,7 +149,7 @@ class ImportCommand extends Command
     }
 
 
-    private function save(array $data):void
+    private function save(array $data): void
     {
         $product = $this->getProduct($data['Product Code']);
         $product->setStrproductcode($data['Product Code']);

@@ -1,7 +1,7 @@
 # Import CSV
 
 ***Развертывание проекта***
-  +  Выполнить git clone https://github.com/asaider/itransition.git
+  +  Выполнить git clone https://github.com/asaider/import.git
   +  Выполнить ```composer install```
   +  Для проекта необходима пустая база "ImportTest",подключение к базе данных вы должны указать в файле .env
   +  Накатить миграции:

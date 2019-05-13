@@ -111,6 +111,7 @@ class ImportCommand extends Command
         return $error;
     }
 
+
     private function getConstraint(): Assert\Collection
     {
         return new Assert\Collection(
